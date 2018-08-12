@@ -1,0 +1,6 @@
+[package]
+name = "rust-mc"
+version = "0.1.0"
+authors = ["Jackson Burnette <jacksondburnette@gmail.com>"]
+
+[dependencies]
