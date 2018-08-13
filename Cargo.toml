@@ -4,3 +4,10 @@ version = "0.1.0"
 authors = ["Jackson Burnette <jacksondburnette@gmail.com>"]
 
 [dependencies]
+cortex-m = "0.5.2"
+panic-abort = "0.2.0"
+cortex-m-rt = "0.5.1"
+
+[dependencies.f3]
+features = ["rt"]
+version = "0.6.1"
