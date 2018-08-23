@@ -5,23 +5,21 @@ extern crate cortex_m;
 #[macro_use]
 extern crate cortex_m_rt;
 extern crate f3;
+extern crate nb;
 extern crate panic_abort;
 
 use cortex_m::asm;
 use cortex_m_rt::ExceptionFrame;
-pub use f3::hal::delay::Delay;
-pub use f3::hal::prelude;
+use f3::hal::delay::Delay;
 use f3::hal::prelude::*;
-pub use f3::hal::serial::Serial;
-pub use f3::hal::stm32f30x::usart1;
-use f3::hal::stm32f30x::{self, USART1};
-pub use f3::led::Leds;
+use f3::hal::serial::Serial;
+use f3::hal::stm32f30x;
+use f3::led::Leds;
 
-pub fn init() -> (
-    Delay,
-    Leds,
-    &'static mut usart1::RegisterBlock,
-) {
+
+entry!(main);
+
+fn main() -> ! {
     let cp = cortex_m::Peripherals::take().unwrap();
     let dp = stm32f30x::Peripherals::take().unwrap();
 
@@ -30,52 +28,46 @@ pub fn init() -> (
 
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
 
-    let delay = Delay::new(cp.SYST, clocks);
+    let _delay = Delay::new(cp.SYST, clocks);
 
-    let leds = Leds::new(dp.GPIOE.split(&mut rcc.ahb));
+    let _leds = Leds::new(dp.GPIOE.split(&mut rcc.ahb));
 
     let mut gpioa = dp.GPIOA.split(&mut rcc.ahb);
 
     let tx = gpioa.pa9.into_af7(&mut gpioa.moder, &mut gpioa.afrh);
     let rx = gpioa.pa10.into_af7(&mut gpioa.moder, &mut gpioa.afrh);
 
-    Serial::usart1(dp.USART1, (tx, rx), 115_200.bps(), clocks, &mut rcc.apb2);
+    let serial =
+        Serial::usart1(dp.USART1, (tx, rx), 115_200.bps(), clocks, &mut rcc.apb2);
 
-    unsafe {
-        (
-            delay,
-            leds,
-            &mut *(USART1::ptr() as *mut _),
-        )
-    }
-}
-
-exception!(HardFault, hard_fault);
-
-fn hard_fault(_ef: &ExceptionFrame) -> ! {
-    asm::bkpt();
-
-    loop {}
-}
-
-exception!(*, default_handler);
-
-fn default_handler(_irqn: i16) {
-    loop {}
-}
-
-entry!(main);
-
-fn main() -> ! {
-    let (_delay, _leds, usart) = init();
+    let (mut tx, mut rx) = serial.split();
+    let mut recieved: u8;
 
     loop {
-        // recieve a byte
-        while usart.isr.read().rxne().bit_is_clear() {}
-        let byte = usart.rdr.read().rdr().bits() as u8;
-        // send it back
-        while usart.isr.read().txe().bit_is_clear() {}
-        usart.tdr.write(|w| w.tdr().bits(u16::from(byte)));
+        // we're getting a look at the internals of the nb::block macro here
+        // we'll use block! in the future, for now we're just messing around
+        // with it
+        loop {  // recieve a byte
+            match rx.read() {
+                Err(nb::Error::Other(e)) => {
+                    panic!("serial recieve error: {:?}", e);
+                },
+                Err(nb::Error::WouldBlock) => {},
+                Ok(byte) => {
+                    recieved = byte;
+                    break;
+                },
+            };
+        }
+        loop {  // send it back
+            match tx.write(recieved) {
+                Err(nb::Error::Other(e)) => {
+                    panic!("serial transfer error: {:?}", e);
+                },
+                Err(nb::Error::WouldBlock) => {},
+                Ok(_) => break,
+            };
+        }
     }
 
 // comment out to focus on serial echo server
@@ -91,4 +83,18 @@ fn main() -> ! {
 //            delay.delay_ms(ms);
 //        }
 //    }
+}
+
+exception!(HardFault, hard_fault);
+
+fn hard_fault(_ef: &ExceptionFrame) -> ! {
+    asm::bkpt();
+
+    loop {}
+}
+
+exception!(*, default_handler);
+
+fn default_handler(_irqn: i16) {
+    loop {}
 }
