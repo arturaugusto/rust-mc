@@ -5,6 +5,7 @@ extern crate cortex_m;
 #[macro_use]
 extern crate cortex_m_rt;
 extern crate f3;
+#[macro_use(block)]
 extern crate nb;
 extern crate panic_abort;
 
@@ -44,30 +45,10 @@ fn main() -> ! {
     let mut recieved: u8;
 
     loop {
-        // we're getting a look at the internals of the nb::block macro here
-        // we'll use block! in the future, for now we're just messing around
-        // with it
-        loop {  // recieve a byte
-            match rx.read() {
-                Err(nb::Error::Other(e)) => {
-                    panic!("serial recieve error: {:?}", e);
-                },
-                Err(nb::Error::WouldBlock) => {},
-                Ok(byte) => {
-                    recieved = byte;
-                    break;
-                },
-            };
-        }
-        loop {  // send it back
-            match tx.write(recieved) {
-                Err(nb::Error::Other(e)) => {
-                    panic!("serial transfer error: {:?}", e);
-                },
-                Err(nb::Error::WouldBlock) => {},
-                Ok(_) => break,
-            };
-        }
+        // read a byte
+        recieved = block!(rx.read()).unwrap();
+        // write it back
+        block!(tx.write(recieved));
     }
 
 // comment out to focus on serial echo server
