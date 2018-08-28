@@ -58,6 +58,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "futures"
+version = "0.1.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "generic-array"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -105,7 +110,9 @@ version = "0.1.0"
 dependencies = [
  "cortex-m 0.5.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m-rt 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "embedded-hal 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "f3 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures 0.1.23 (registry+https://github.com/rust-lang/crates.io-index)",
  "nb 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "panic-abort 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -166,6 +173,7 @@ dependencies = [
 "checksum cortex-m-rt 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "6d5c26952ec2bdfd3c66cddb22cb6432b042ca9ccda55762ebba68b73adbae5a"
 "checksum embedded-hal 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "26944677e4934eb5fb4025501dc0d6cdbcf6bfabd6200fcfee2e7e8eef8c0362"
 "checksum f3 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f081c0ce81216d24179e220382c9d6199a6223c69584caa0d3b86691376ac4e9"
+"checksum futures 0.1.23 (registry+https://github.com/rust-lang/crates.io-index)" = "884dbe32a6ae4cd7da5c6db9b78114449df9953b8d490c9d7e1b51720b922c62"
 "checksum generic-array 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8107dafa78c80c848b71b60133954b4a58609a3a1a5f9af037ecc7f67280f369"
 "checksum l3gd20 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f3da4a9711f4c14fc5cdf6631189de01c58536a00e5a370c071dcbd10b5b96ec"
 "checksum lsm303dlhc 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9e5d1a5c290951321d1b0d4a40edd828537de9889134a0e67c5146542ae57706"

@@ -4,8 +4,10 @@
 extern crate cortex_m;
 #[macro_use]
 extern crate cortex_m_rt;
+extern crate embedded_hal;
 extern crate f3;
-#[macro_use(block)]
+extern crate futures;
+#[macro_use(try_nb, block)]
 extern crate nb;
 extern crate panic_abort;
 
@@ -16,7 +18,20 @@ use f3::hal::prelude::*;
 use f3::hal::serial::Serial;
 use f3::hal::stm32f30x;
 use f3::led::Leds;
+use futures::{future, Async, Future};
 
+
+// use futures in serial read
+fn read<S>(serial: S) -> impl Future<Item = (S, u8), Error = S::Error>
+where
+    S: embedded_hal::serial::Read<u8>,
+{
+    let mut serial = Some(serial);
+    future::poll_fn(move || {
+        let byte = try_nb!(serial.as_mut().unwrap().read());
+        Ok(Async::Ready((serial.take().unwrap(), byte)))
+    })
+}
 
 entry!(main);
 
