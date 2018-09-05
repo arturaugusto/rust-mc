@@ -102,13 +102,15 @@ fn main() -> ! {
 
     // roulette task
     let mut roulette = future::loop_fn::<_, (), _, _>(
-        (leds, timer, 1),
-        |(mut leds, timer, nextled)| {
+        (leds, timer, 0),
+        |(mut leds, timer, curr)| {
             wait(timer).map(move |timer| {
-                leds[nextled].on();
-                leds[nextled - 1].off();
+                let next = (curr + 1) % numleds;
 
-                Loop::Continue((leds, timer, (nextled + 1) % numleds))
+                leds[next].on();
+                leds[curr].off();
+
+                Loop::Continue((leds, timer, next))
             })
         });
 
