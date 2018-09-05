@@ -46,8 +46,7 @@ where
     R: embedded_hal::serial::Read<u8>,
 {
     let mut tx = Some(tx);
-    let mut rx = Some(rx);
-    future::poll_fn(move || {
+    let mut rx = Some(rx); future::poll_fn(move || {
         try_nb!(tx.as_mut().unwrap().write(byte));
 
         Ok(Async::Ready((tx.take().unwrap(), rx.take().unwrap())))
@@ -93,14 +92,16 @@ fn main() -> ! {
     let (tx, rx) = serial.split();
 
     // loopback task
-    let mut loopback = future::loop_fn((tx, rx), |(tx, rx)| {
+    let mut loopback = future::loop_fn::<_, (), _, _>((tx, rx), |(tx, rx)| {
         read(tx, rx)
-            .and_then(|(tx, rx, byte)| write(tx, rx, byte))
+            .and_then(|(tx, rx, byte)| {
+                write(tx, rx, byte).map_err(|_| panic!("unreachable"))
+            })
             .map(|(tx, rx)| Loop::Continue((tx, rx)))
     });
 
     // roulette task
-    let mut roulette = future::loop_fn(
+    let mut roulette = future::loop_fn::<_, (), _, _>(
         (leds, timer, 1),
         |(mut leds, timer, nextled)| {
             wait(timer).map(move |timer| {
