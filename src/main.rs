@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+#![feature(const_fn)]
 
 extern crate cortex_m;
 #[macro_use]
@@ -22,6 +23,39 @@ use f3::led::Leds;
 use futures::{future, Async, Future};
 use futures::future::Loop;
 use void::Void;
+
+enum Mode {
+    Continuous,
+    Bounce,
+}
+
+enum Direction {
+    Clock,
+    Counterclock,
+}
+
+impl Direction {
+    fn reverse(self) -> Self {
+        match self {
+            Direction::Clock => Direction::Counterclock,
+            Direction::Counterclock => Direction::Clock,
+        }
+    }
+}
+
+struct State {
+    mode: Mode,
+    direction: Direction,
+}
+
+impl State {
+    const fn new() -> Self {
+        State {
+            direction: Direction::Clock,
+            mode: Mode::Continuous,
+        }
+    }
+}
 
 
 // use futures in serial read

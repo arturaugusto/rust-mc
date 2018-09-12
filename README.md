@@ -6,4 +6,4 @@ _each task is marked with a tag_
 - [x] Implement LED roulette
 - [x] Implement serial loopback
 - [x] Run LED roulette and serial loopback concurrently using `futures` directly
-- [ ] Use `await!` to run LED roulette and serial loopback concurrently
+- [ ] serial control of LED
