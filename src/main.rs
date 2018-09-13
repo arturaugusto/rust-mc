@@ -41,6 +41,13 @@ impl Direction {
             Direction::Counterclock => Direction::Clock,
         }
     }
+
+    fn nextled(&self, curr: &u8, max: u8) -> u8 {
+        match self {
+            Direction::Clock => (curr + 1) % max,
+            Direction::Counterclock => curr.checked_sub(1).unwrap_or(max - 1),
+        }
+    }
 }
 
 struct State {
@@ -51,8 +58,8 @@ struct State {
 impl State {
     const fn new() -> Self {
         State {
-            direction: Direction::Clock,
             mode: Mode::Continuous,
+            direction: Direction::Clock,
         }
     }
 }
